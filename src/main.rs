@@ -1,5 +1,7 @@
 extern crate kiss3d;
 
+mod physics;
+
 use kiss3d::nalgebra::{Vector3, Translation3};
 use kiss3d::window::Window;
 use kiss3d::light::Light;
