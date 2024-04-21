@@ -18,6 +18,7 @@
           buildInputs = [
             rustc
             cargo
+            rust-analyzer
 
 
 
