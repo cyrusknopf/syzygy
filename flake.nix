@@ -16,15 +16,12 @@
       in with pkgs; rec {
         devShell = mkShell rec {
           buildInputs = [
+            # Rust and co
             rustc
             cargo
             rust-analyzer
 
-
-
-
-
-
+            # Graphics requirements
             libxkbcommon
             libGL
 
