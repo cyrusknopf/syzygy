@@ -1,6 +1,6 @@
 use std::ops::Add;
 
-// Adapted from Na Wang's physics engine for Python :salute:
+// Adapted from Na Wang's physics engine for Python 🫡
 
 #[derive(Debug, Copy, Clone)]
 pub struct Vector {
@@ -109,12 +109,41 @@ fn update_positions(bodies: &Vec<Body>, idx: usize) -> Vec<Body> {
             &other_body.mass,
             &this_body.position,
             &other_body.position,
-        );
         // Summate the forces to find the force exerted on this object by all other objects
+            );
         f_sum = f_sum + f;
     }
 
-    return Vec::new();
+    // F = ma -> a = f / m
+    let accel = Vector {
+        x: f_sum.x / this_body.mass as f32,
+        y: f_sum.y / this_body.mass as f32,
+        z: f_sum.z / this_body.mass as f32,
+    };
+
+    // v= u + at
+    let new_velocity = Vector {
+        x: this_body.velocity.x + accel.x,
+        y: this_body.velocity.y + accel.y,
+        z: this_body.velocity.z + accel.z,
+    };
+
+    // s = ut + 1/2at^2
+    let new_pos = Vector {
+        x: this_body.position.x + accel.x,
+        y: this_body.position.y + accel.y,
+        z: this_body.position.z + accel.z,
+    };
+
+    let mut new_this_body = this_body;
+    new_this_body.position = new_pos;
+    new_this_body.velocity = new_velocity;
+
+    let mut new_bodies = bodies.clone();
+    new_bodies[idx] = new_this_body;
+
+    return new_bodies;
+
 }
 
 fn main() {
