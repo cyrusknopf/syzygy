@@ -2,6 +2,7 @@ use std::ops::Add;
 
 // Adapted from Na Wang's physics engine for Python 🫡
 
+// Vector struct for defining positions, velocities, etc.
 #[derive(Debug, Copy, Clone)]
 pub struct Vector {
     x: f32,
@@ -12,6 +13,7 @@ pub struct Vector {
 impl Add for Vector {
     type Output = Vector;
 
+    // Element-wise addition for two vectors
     fn add(self, other: Vector) -> Vector {
         Vector {
             x: self.x + other.x,
@@ -91,6 +93,7 @@ fn velocity(accel: &f32, time: &f32) -> f32 {
 }
 
 fn update_positions(bodies: &Vec<Body>, idx: usize) -> Vec<Body> {
+    // The body whose position we are updating
     let this_body = bodies[idx];
     let mut f_sum = Vector {
         x: 0.,
@@ -143,6 +146,25 @@ fn update_positions(bodies: &Vec<Body>, idx: usize) -> Vec<Body> {
     new_bodies[idx] = new_this_body;
 
     return new_bodies;
+
+
+}
+
+fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
+    let first_body: Body = bodies[idx1];
+    let second_body: Body = bodies[idx2];
+
+    let radius1 : f32 =  first_body.radius;
+    let radius2 : f32 =  second_body.radius;
+
+    let pi : f32 = std::f32::consts::PI;
+
+    let volume1 : f32 = 1.333333333333333 * pi * radius1.powi(3) as f32;
+    let volume2 : f32 = 1.333333333333333 * pi * radius2.powi(3) as f32;
+
+    let total_mass : i32 = first_body.mass + second_body.mass;
+
+
 
 }
 
