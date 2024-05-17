@@ -10,10 +10,10 @@ pub struct Vector {
     z: f32,
 }
 
+// Element-wise addition for two vectors
 impl Add for Vector {
     type Output = Vector;
 
-    // Element-wise addition for two vectors
     fn add(self, other: Vector) -> Vector {
         Vector {
             x: self.x + other.x,
@@ -23,6 +23,7 @@ impl Add for Vector {
     }
 }
 
+// Orbital body struct. Models planets and stars
 #[derive(Copy, Clone)]
 pub struct Body {
     id: i32,
@@ -32,8 +33,10 @@ pub struct Body {
     velocity: Vector,
 }
 
+// Newton's Gravitational Constant
 const G: f32 = 6.674e-11;
 
+// Euclidean Distance between two points in 3D space
 fn distance(loc1: &Vector, loc2: &Vector) -> f32 {
     let x_dist: f32 = (loc2.x - loc1.x).powi(2);
     let y_dist: f32 = (loc2.y - loc1.y).powi(2);
@@ -146,23 +149,30 @@ fn update_positions(bodies: &Vec<Body>, idx: usize) -> Vec<Body> {
     new_bodies[idx] = new_this_body;
 
     return new_bodies;
-
-
 }
 
 fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
     let first_body: Body = bodies[idx1];
     let second_body: Body = bodies[idx2];
 
-    let radius1 : f32 =  first_body.radius;
-    let radius2 : f32 =  second_body.radius;
-
     let pi : f32 = std::f32::consts::PI;
 
-    let volume1 : f32 = 1.333333333333333 * pi * radius1.powi(3) as f32;
-    let volume2 : f32 = 1.333333333333333 * pi * radius2.powi(3) as f32;
+    let volume1 : f32 = 1.333333333333333 * pi * first_body.radius.powi(3) as f32;
+    let volume2 : f32 = 1.333333333333333 * pi * second_body.radius.powi(3) as f32;
 
-    let total_mass : i32 = first_body.mass + second_body.mass;
+    let total_vol : f32 = volume1 + volume2;
+
+    let final_radius : f32 = (total_vol / (pi * 1.333333333333333)).powf(0.33333333333333333);
+
+    let mut resultant_body : Body = first_body.clone();
+    resultant_body.mass = first_body.mass + second_body.mass;
+    resultant_body.radius = final_radius;
+
+    let mut resultant_velocity : Vector = Vector {
+        x: (first_body.mass as f32 * first_body.velocity.x + second_body.mass as f32 * second_body.velocity.x) / (first_body.mass + second_body.mass) as f32,
+        y: (first_body.mass as f32 * first_body.velocity.y + second_body.mass as f32 * second_body.velocity.y) / (first_body.mass + second_body.mass) as f32,
+        z: (first_body.mass as f32 * first_body.velocity.z + second_body.mass as f32 * second_body.velocity.z) / (first_body.mass + second_body.mass) as f32
+    };
 
 
 
