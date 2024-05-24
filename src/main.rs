@@ -1,15 +1,22 @@
 extern crate kiss3d;
 
 mod physics;
+mod graphics;
 
-use kiss3d::nalgebra::{Translation3};
+use kiss3d::scene::SceneNode;
+use rand::Rng;
+use kiss3d::nalgebra::Translation3;
 use kiss3d::window::Window;
 use kiss3d::light::Light;
 
 use physics::Body;
-use physics::Vector;
 
 const NUM_PLANETS : i32 = 5;
+
+pub struct Body3D {
+    pub body: Body,
+    pub node: SceneNode
+}
 
 fn basic_example() {
     let mut window = Window::new("Kiss3d: cube");
@@ -29,6 +36,24 @@ fn basic_example() {
 }
 
 fn main() {
-    let bodies = physics::gen_bodies(NUM_PLANETS);
+    let mut window = Window::new("Syzygy");
+    let mut bodies : Vec<Body> = physics::gen_bodies(NUM_PLANETS);
 
+    while window.render() {
+        bodies = physics::update_all_bodies(&bodies, 0.01, 500.);
+
+        for body in &bodies {
+            let mut body_node = window.add_sphere(body.radius);
+            body_node.set_color(
+                rand::thread_rng().gen_range(0..10) as f32 / 10.,
+                rand::thread_rng().gen_range(0..10) as f32 / 10.,
+                rand::thread_rng().gen_range(0..10) as f32 / 10.
+            );
+            body_node.set_local_translation(Translation3::new(
+                    body.position.x,
+                    body.position.y,
+                    body.position.z
+            ));
+        }
+    }
 }

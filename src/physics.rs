@@ -1,5 +1,4 @@
 use std::ops::Add;
-
 use rand::Rng;
 
 // Adapted from Na Wang's physics engine for Python 🫡
@@ -7,9 +6,9 @@ use rand::Rng;
 // Vector struct for defining positions, velocities, etc.
 #[derive(Debug, Copy, Clone)]
 pub struct Vector {
-    x: f32,
-    y: f32,
-    z: f32,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 // Element-wise addition for two vectors
@@ -29,11 +28,11 @@ impl Add for Vector {
 // Orbital body struct. Models planets and stars
 #[derive(Copy, Clone)]
 pub struct Body {
-    id: i32,
-    mass: i32,
-    radius: f32,
-    position: Vector,
-    velocity: Vector,
+    pub id: i32,
+    pub mass: i32,
+    pub radius: f32,
+    pub position: Vector,
+    pub velocity: Vector
 }
 
 const NULL_BODY : Body = Body {
@@ -106,7 +105,7 @@ fn velocity(accel: &f32, time: &f32) -> f32 {
     return accel * time;
 }
 
-fn update_positions(bodies: &Vec<Body>, idx: usize) -> Body {
+fn update_positions(bodies: &Vec<Body>, idx: usize, timestep : f32) -> Body {
     // The body whose position we are updating
     let this_body = bodies[idx];
     let mut f_sum = Vector {
@@ -147,16 +146,20 @@ fn update_positions(bodies: &Vec<Body>, idx: usize) -> Body {
 
     // s = ut + 1/2at^2
     let new_pos = Vector {
-        x: this_body.position.x + accel.x,
-        y: this_body.position.y + accel.y,
-        z: this_body.position.z + accel.z,
+        x: this_body.position.x + this_body.velocity.x * timestep + 0.5 * accel.x * timestep.powi(2),
+        y: this_body.position.y + this_body.velocity.y * timestep + 0.5 * accel.y * timestep.powi(2),
+        z: this_body.position.z + this_body.velocity.z * timestep + 0.5 * accel.z * timestep.powi(2),
     };
 
-    let mut new_this_body = this_body;
-    new_this_body.position = new_pos;
-    new_this_body.velocity = new_velocity;
 
-    return new_this_body;
+    Body {
+        id: this_body.id,
+        mass: this_body.mass,
+        radius: this_body.radius,
+        position: new_pos,
+        velocity: new_velocity,
+    }
+
 }
 
 fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
@@ -202,12 +205,11 @@ fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
     return resultant_bodies;
 }
 
-fn update_all_bodies(bodies: &Vec<Body>, timestep : i32, bound : f32) -> Vec<Body> {
-    
+pub fn update_all_bodies(bodies: &Vec<Body>, timestep : f32, bound : f32) -> Vec<Body> {
     // Update positions of all bodies
     let mut resultant_bodies : Vec<Body> = bodies.clone();
     for i in 0..bodies.len() {
-        resultant_bodies[i] = update_positions(bodies, i);
+        resultant_bodies[i] = update_positions(&bodies, i, timestep);
 
         let absolute_x : f32 = resultant_bodies[i].position.x.abs();
 
@@ -247,7 +249,7 @@ fn gen_body(id : i32) -> Body {
     let body = Body {
         id: id,
         mass: rand::thread_rng().gen_range(1..101),
-        radius: rand::thread_rng().gen_range(1..501) as f32,
+        radius: rand::thread_rng().gen_range(1..51) as f32,
         position: rand_pos,
         velocity: rand_vel
     };
