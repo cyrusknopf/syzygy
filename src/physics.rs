@@ -23,6 +23,7 @@ impl Add for Vector {
     }
 }
 
+
 // Orbital body struct. Models planets and stars
 #[derive(Copy, Clone)]
 pub struct Body {
