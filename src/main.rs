@@ -38,11 +38,9 @@ fn basic_example() {
 fn main() {
     let mut window = Window::new("Syzygy");
     let mut bodies : Vec<Body> = physics::gen_bodies(NUM_PLANETS);
+    let mut nodes : Vec<SceneNode> = Vec::new();
 
-    while window.render() {
-        bodies = physics::update_all_bodies(&bodies, 0.01, 500.);
-
-        for body in &bodies {
+    for body in &bodies {
             let mut body_node = window.add_sphere(body.radius);
             body_node.set_color(
                 rand::thread_rng().gen_range(0..10) as f32 / 10.,
@@ -53,6 +51,18 @@ fn main() {
                     body.position.x,
                     body.position.y,
                     body.position.z
+            ));
+            nodes.push(body_node);
+    }
+
+    while window.render() {
+        bodies = physics::update_all_bodies(&bodies, 0.001, 500.);
+
+        for i in 0..nodes.len() {
+            nodes[i].set_local_translation(Translation3::new(
+                    bodies[i].position.x,
+                    bodies[i].position.y,
+                    bodies[i].position.z
             ));
         }
     }
