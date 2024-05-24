@@ -33,6 +33,14 @@ pub struct Body {
     velocity: Vector,
 }
 
+const NULL_BODY : Body = Body {
+    id: -1,
+    mass: 0,
+    radius: 0.,
+    position: Vector {x:0., y: 0., z:0.},
+    velocity: Vector {x:0., y: 0., z:0.}
+};
+
 // Newton's Gravitational Constant
 const G: f32 = 6.674e-11;
 
@@ -95,7 +103,7 @@ fn velocity(accel: &f32, time: &f32) -> f32 {
     return accel * time;
 }
 
-fn update_positions(bodies: &Vec<Body>, idx: usize) -> Vec<Body> {
+fn update_positions(bodies: &Vec<Body>, idx: usize) -> Body {
     // The body whose position we are updating
     let this_body = bodies[idx];
     let mut f_sum = Vector {
@@ -145,10 +153,7 @@ fn update_positions(bodies: &Vec<Body>, idx: usize) -> Vec<Body> {
     new_this_body.position = new_pos;
     new_this_body.velocity = new_velocity;
 
-    let mut new_bodies = bodies.clone();
-    new_bodies[idx] = new_this_body;
-
-    return new_bodies;
+    return new_this_body;
 }
 
 fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
@@ -164,30 +169,61 @@ fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
 
     let final_radius : f32 = (total_vol / (pi * 1.333333333333333)).powf(0.33333333333333333);
 
+    // The two coliding bodies merge to form a single body...
     let mut resultant_body : Body = first_body.clone();
+    // ... with combined mass
     resultant_body.mass = first_body.mass + second_body.mass;
+    // ... with combined radius
     resultant_body.radius = final_radius;
 
-    let mut resultant_velocity : Vector = Vector {
+    let resultant_velocity : Vector = Vector {
         x: (first_body.mass as f32 * first_body.velocity.x + second_body.mass as f32 * second_body.velocity.x) / (first_body.mass + second_body.mass) as f32,
         y: (first_body.mass as f32 * first_body.velocity.y + second_body.mass as f32 * second_body.velocity.y) / (first_body.mass + second_body.mass) as f32,
         z: (first_body.mass as f32 * first_body.velocity.z + second_body.mass as f32 * second_body.velocity.z) / (first_body.mass + second_body.mass) as f32
     };
+    // ... with combined velocity
+    resultant_body.velocity = resultant_velocity;
 
+    let resultant_position : Vector = Vector {
+        x: (first_body.position.x + second_body.position.x) / 2.,
+        y: (first_body.position.y + second_body.position.y) / 2.,
+        z: (first_body.position.z + second_body.position.z) / 2.,
+    };
+    // ... and combined position.
+    resultant_body.position = resultant_position;
 
+    let mut resultant_bodies : Vec<Body> = bodies.clone();
+    resultant_bodies[idx2] = NULL_BODY.clone();
+    resultant_bodies[idx1] = resultant_body;
 
+    return resultant_bodies;
 }
 
-fn main() {
-    let pos1: Vector = Vector {
-        x: 1.0,
-        y: 1.,
-        z: 1.,
-    };
-    let pos2: Vector = Vector {
-        x: 2.,
-        y: 2.,
-        z: 2.,
-    };
-    println!("Distance: {}", distance(&pos1, &pos2));
+fn update_all_bodies(bodies: &Vec<Body>, timestep : i32, bound : f32) -> Vec<Body> {
+    
+    // Update positions of all bodies
+    let mut resultant_bodies : Vec<Body> = bodies.clone();
+    for i in 0..bodies.len() {
+        resultant_bodies[i] = update_positions(bodies, i);
+
+        let absolute_x : f32 = resultant_bodies[i].position.x.abs();
+
+        let absolute_y : f32 = resultant_bodies[i].position.y.abs();
+
+        let absolute_z : f32 = resultant_bodies[i].position.z.abs();
+
+        // Check OOB
+        if absolute_x > bound {
+            resultant_bodies[i] = NULL_BODY.clone();
+        }
+
+        if absolute_y > bound {
+            resultant_bodies[i] = NULL_BODY.clone();
+        }
+
+        if absolute_z > bound {
+            resultant_bodies[i] = NULL_BODY.clone();
+        }
+    }
+    return resultant_bodies;
 }
