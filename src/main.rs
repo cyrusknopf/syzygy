@@ -6,7 +6,12 @@ use kiss3d::nalgebra::{Translation3};
 use kiss3d::window::Window;
 use kiss3d::light::Light;
 
-fn main() {
+use physics::Body;
+use physics::Vector;
+
+const NUM_PLANETS : i32 = 5;
+
+fn basic_example() {
     let mut window = Window::new("Kiss3d: cube");
     let mut sphere = window.add_sphere(0.5);
 
@@ -18,8 +23,12 @@ fn main() {
 
 
     while window.render() {
-
         x_pos += 0.01;
         sphere.set_local_translation(Translation3::new(x_pos, 0.0, 0.0));
     }
+}
+
+fn main() {
+    let bodies = physics::gen_bodies(NUM_PLANETS);
+
 }

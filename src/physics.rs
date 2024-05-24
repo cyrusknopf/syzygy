@@ -1,5 +1,7 @@
 use std::ops::Add;
 
+use rand::Rng;
+
 // Adapted from Na Wang's physics engine for Python 🫡
 
 // Vector struct for defining positions, velocities, etc.
@@ -227,4 +229,37 @@ fn update_all_bodies(bodies: &Vec<Body>, timestep : i32, bound : f32) -> Vec<Bod
         }
     }
     return resultant_bodies;
+}
+
+fn gen_body(id : i32) -> Body {
+    let rand_pos = Vector {
+        x: rand::thread_rng().gen_range(-250..251) as f32,
+        y: rand::thread_rng().gen_range(-250..251) as f32,
+        z: rand::thread_rng().gen_range(-250..251) as f32
+        };
+
+    let rand_vel = Vector {
+        x: rand::thread_rng().gen_range(1..51) as f32,
+        y: rand::thread_rng().gen_range(1..51) as f32,
+        z: rand::thread_rng().gen_range(1..51) as f32
+    };
+
+    let body = Body {
+        id: id,
+        mass: rand::thread_rng().gen_range(1..101),
+        radius: rand::thread_rng().gen_range(1..501) as f32,
+        position: rand_pos,
+        velocity: rand_vel
+    };
+
+    return body;
+}
+
+pub fn gen_bodies(n : i32) -> Vec<Body> {
+    let mut bodies = Vec::new();
+    for i in 0..n {
+        bodies.push(gen_body(i));
+    }
+
+    return bodies;
 }
