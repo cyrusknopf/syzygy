@@ -11,7 +11,7 @@ use kiss3d::light::Light;
 
 use physics::Body;
 
-const NUM_PLANETS : i64 = 5;
+const NUM_PLANETS : i64 = 10;
 
 pub struct Body3D {
     pub body: Body,

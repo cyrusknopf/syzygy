@@ -44,7 +44,9 @@ const NULL_BODY : Body = Body {
 };
 
 // My Newton's Gravitational Constant
-const G: f64 = 6.674e-4;
+const G: f64 = 6.674e-5;
+
+const SOLAR : i64 = -2;
 
 // Euclidean Distance between two points in 3D space
 fn distance(loc1: &Vector, loc2: &Vector) -> f64 {
@@ -108,6 +110,7 @@ fn velocity(accel: &f64, time: &f64) -> f64 {
 fn update_positions(bodies: &Vec<Body>, idx: usize, timestep : f64) -> Body {
     // The body whose position we are updating
     let this_body = bodies[idx];
+    if this_body.id == SOLAR { return this_body; }
     let mut f_sum = Vector {
         x: 0.,
         y: 0.,
@@ -215,6 +218,9 @@ pub fn update_all_bodies(bodies: &Vec<Body>, timestep : f64, bound : f64) -> Vec
     // Update positions of all bodies
     let mut resultant_bodies : Vec<Body> = bodies.clone();
     for i in 0..bodies.len() {
+        if bodies[i].id == -1 {
+            continue;
+        }
         resultant_bodies[i] = update_positions(&bodies, i, timestep);
 
         let absolute_x : f64 = resultant_bodies[i].position.x.abs();
@@ -235,6 +241,20 @@ pub fn update_all_bodies(bodies: &Vec<Body>, timestep : f64, bound : f64) -> Vec
         if absolute_z > bound {
             resultant_bodies[i] = NULL_BODY.clone();
         }
+
+        // Check against all other bodies if there is a collision
+        for j in 0..resultant_bodies.len() {
+            // Don't check against self
+            if bodies[i].id == bodies[j].id {
+                continue;
+            }
+            // If the distance between two bodies is less than the sum of their radi, there is a
+            // collision. Model accordingly
+            if distance(&bodies[i].position, &bodies[j].position) <
+                bodies[i].radius + bodies[j].radius {
+                    resultant_bodies[j] = NULL_BODY.clone();
+            }
+        }
     }
     return resultant_bodies;
 }
@@ -247,9 +267,9 @@ fn gen_body(id : i64) -> Body {
         };
 
     let rand_vel = Vector {
-        x: rand::thread_rng().gen_range(-10..10) as f64,
-        y: rand::thread_rng().gen_range(-10..10) as f64,
-        z: rand::thread_rng().gen_range(-10..10) as f64
+        x: rand::thread_rng().gen_range(-3..3) as f64,
+        y: rand::thread_rng().gen_range(-3..3) as f64,
+        z: rand::thread_rng().gen_range(-3..3) as f64
     };
 
     let body = Body {
@@ -268,18 +288,19 @@ pub fn gen_bodies(n : i64) -> Vec<Body> {
     for i in 0..n {
         bodies.push(gen_body(i));
     }
-    let sun = gen_solar(1000., 100000);
+    let sun = gen_solar(10., 1000000);
     bodies.push(sun);
 
     return bodies;
 }
 
 pub fn gen_solar (radius : f64, mass : i64) -> Body {
-    Body {
-        id: -1,
+    let sun =Body {
+        id: SOLAR,
         mass: mass,
         radius: radius,
         position: Vector {x:0., y:0. ,z:0.},
         velocity: Vector {x:0., y:0. ,z:0.},
-    }
+    };
+    return sun;
 }
