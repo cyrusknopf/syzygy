@@ -6,9 +6,9 @@ use rand::Rng;
 // Vector struct for defining positions, velocities, etc.
 #[derive(Debug, Copy, Clone)]
 pub struct Vector {
-    pub x: f32,
-    pub y: f32,
-    pub z: f32,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 // Element-wise addition for two vectors
@@ -28,9 +28,9 @@ impl Add for Vector {
 // Orbital body struct. Models planets and stars
 #[derive(Copy, Clone)]
 pub struct Body {
-    pub id: i32,
-    pub mass: i32,
-    pub radius: f32,
+    pub id: i64,
+    pub mass: i64,
+    pub radius: f64,
     pub position: Vector,
     pub velocity: Vector
 }
@@ -43,26 +43,26 @@ const NULL_BODY : Body = Body {
     velocity: Vector {x:0., y: 0., z:0.}
 };
 
-// Newton's Gravitational Constant
-const G: f32 = 6.674e-11;
+// My Newton's Gravitational Constant
+const G: f64 = 6.674e-4;
 
 // Euclidean Distance between two points in 3D space
-fn distance(loc1: &Vector, loc2: &Vector) -> f32 {
-    let x_dist: f32 = (loc2.x - loc1.x).powi(2);
-    let y_dist: f32 = (loc2.y - loc1.y).powi(2);
-    let z_dist: f32 = (loc2.z - loc1.z).powi(2);
+fn distance(loc1: &Vector, loc2: &Vector) -> f64 {
+    let x_dist: f64 = (loc2.x - loc1.x).powi(2);
+    let y_dist: f64 = (loc2.y - loc1.y).powi(2);
+    let z_dist: f64 = (loc2.z - loc1.z).powi(2);
     return (x_dist + y_dist + z_dist).sqrt();
 }
 
 // F = G * (m1 * m2) / r^2
-fn force_scalar(mass1: &i32, mass2: &i32, d: &f32) -> f32 {
-    return G * (mass1 * mass2) as f32 / d.powi(2);
+fn force_scalar(mass1: &i64, mass2: &i64, d: &f64) -> f64 {
+    return G * (mass1 * mass2) as f64 / d.powi(2);
 }
 
-fn direction(loc1: &Vector, loc2: &Vector, d: &f32) -> Vector {
-    let x_comp: f32 = (loc2.x - loc1.x) / d;
-    let y_comp: f32 = (loc2.y - loc1.y) / d;
-    let z_comp: f32 = (loc2.z - loc1.z) / d;
+fn direction(loc1: &Vector, loc2: &Vector, d: &f64) -> Vector {
+    let x_comp: f64 = (loc2.x - loc1.x) / d;
+    let y_comp: f64 = (loc2.y - loc1.y) / d;
+    let z_comp: f64 = (loc2.z - loc1.z) / d;
 
     return Vector {
         x: x_comp,
@@ -71,10 +71,10 @@ fn direction(loc1: &Vector, loc2: &Vector, d: &f32) -> Vector {
     };
 }
 
-fn force_vector(f: &f32, direction: &Vector) -> Vector {
-    let x_comp: f32 = f * direction.x;
-    let y_comp: f32 = f * direction.y;
-    let z_comp: f32 = f * direction.z;
+fn force_vector(f: &f64, direction: &Vector) -> Vector {
+    let x_comp: f64 = f * direction.x;
+    let y_comp: f64 = f * direction.y;
+    let z_comp: f64 = f * direction.z;
     return Vector {
         x: x_comp,
         y: y_comp,
@@ -82,8 +82,8 @@ fn force_vector(f: &f32, direction: &Vector) -> Vector {
     };
 }
 
-fn gravitational_force(mass1: &i32, mass2: &i32, loc1: &Vector, loc2: &Vector) -> Vector {
-    let d: f32 = distance(&loc1, &loc2);
+fn gravitational_force(mass1: &i64, mass2: &i64, loc1: &Vector, loc2: &Vector) -> Vector {
+    let d: f64 = distance(&loc1, &loc2);
     if d == 0.0 {
         return Vector {
             x: 0.0,
@@ -91,21 +91,21 @@ fn gravitational_force(mass1: &i32, mass2: &i32, loc1: &Vector, loc2: &Vector) -
             z: 0.0,
         };
     } else {
-        let force_scalar: f32 = force_scalar(&mass1, &mass2, &d);
+        let force_scalar: f64 = force_scalar(&mass1, &mass2, &d);
         let direction: Vector = direction(&loc1, &loc2, &d);
         return force_vector(&force_scalar, &direction);
     }
 }
 
-fn acceleration(force: &f32, mass: &i32) -> f32 {
-    return force / (*mass as f32);
+fn acceleration(force: &f64, mass: &i64) -> f64 {
+    return force / (*mass as f64);
 }
 
-fn velocity(accel: &f32, time: &f32) -> f32 {
+fn velocity(accel: &f64, time: &f64) -> f64 {
     return accel * time;
 }
 
-fn update_positions(bodies: &Vec<Body>, idx: usize, timestep : f32) -> Body {
+fn update_positions(bodies: &Vec<Body>, idx: usize, timestep : f64) -> Body {
     // The body whose position we are updating
     let this_body = bodies[idx];
     let mut f_sum = Vector {
@@ -125,16 +125,17 @@ fn update_positions(bodies: &Vec<Body>, idx: usize, timestep : f32) -> Body {
             &other_body.mass,
             &this_body.position,
             &other_body.position,
-        // Summate the forces to find the force exerted on this object by all other objects
             );
+        // Summate the forces to find the force exerted on this object by all other objects
         f_sum = f_sum + f;
+        print!("{},{},{} force exerted onto {}\n",f_sum.x, f_sum.y, f_sum.z , idx);
     }
 
     // F = ma -> a = f / m
     let accel = Vector {
-        x: f_sum.x / this_body.mass as f32,
-        y: f_sum.y / this_body.mass as f32,
-        z: f_sum.z / this_body.mass as f32,
+        x: f_sum.x / this_body.mass as f64,
+        y: f_sum.y / this_body.mass as f64,
+        z: f_sum.z / this_body.mass as f64,
     };
 
     // v= u + at
@@ -166,14 +167,14 @@ fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
     let first_body: Body = bodies[idx1];
     let second_body: Body = bodies[idx2];
 
-    let pi : f32 = std::f32::consts::PI;
+    let pi : f64 = std::f64::consts::PI;
 
-    let volume1 : f32 = 1.333333333333333 * pi * first_body.radius.powi(3) as f32;
-    let volume2 : f32 = 1.333333333333333 * pi * second_body.radius.powi(3) as f32;
+    let volume1 : f64 = 1.333333333333333 * pi * first_body.radius.powi(3) as f64;
+    let volume2 : f64 = 1.333333333333333 * pi * second_body.radius.powi(3) as f64;
 
-    let total_vol : f32 = volume1 + volume2;
+    let total_vol : f64 = volume1 + volume2;
 
-    let final_radius : f32 = (total_vol / (pi * 1.333333333333333)).powf(0.33333333333333333);
+    let final_radius : f64 = (total_vol / (pi * 1.333333333333333)).powf(0.33333333333333333);
 
     // The two coliding bodies merge to form a single body...
     let mut resultant_body : Body = first_body.clone();
@@ -183,9 +184,14 @@ fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
     resultant_body.radius = final_radius;
 
     let resultant_velocity : Vector = Vector {
-        x: (first_body.mass as f32 * first_body.velocity.x + second_body.mass as f32 * second_body.velocity.x) / (first_body.mass + second_body.mass) as f32,
-        y: (first_body.mass as f32 * first_body.velocity.y + second_body.mass as f32 * second_body.velocity.y) / (first_body.mass + second_body.mass) as f32,
-        z: (first_body.mass as f32 * first_body.velocity.z + second_body.mass as f32 * second_body.velocity.z) / (first_body.mass + second_body.mass) as f32
+        x: (first_body.mass as f64 * first_body.velocity.x
+            + second_body.mass as f64 * second_body.velocity.x) / (first_body.mass + second_body.mass) as f64,
+
+        y: (first_body.mass as f64 * first_body.velocity.y
+            + second_body.mass as f64 * second_body.velocity.y) / (first_body.mass + second_body.mass) as f64,
+
+        z: (first_body.mass as f64 * first_body.velocity.z
+            + second_body.mass as f64 * second_body.velocity.z) / (first_body.mass + second_body.mass) as f64
     };
     // ... with combined velocity
     resultant_body.velocity = resultant_velocity;
@@ -205,17 +211,17 @@ fn model_collisions(bodies: &Vec<Body>, idx1: usize, idx2: usize) -> Vec<Body> {
     return resultant_bodies;
 }
 
-pub fn update_all_bodies(bodies: &Vec<Body>, timestep : f32, bound : f32) -> Vec<Body> {
+pub fn update_all_bodies(bodies: &Vec<Body>, timestep : f64, bound : f64) -> Vec<Body> {
     // Update positions of all bodies
     let mut resultant_bodies : Vec<Body> = bodies.clone();
     for i in 0..bodies.len() {
         resultant_bodies[i] = update_positions(&bodies, i, timestep);
 
-        let absolute_x : f32 = resultant_bodies[i].position.x.abs();
+        let absolute_x : f64 = resultant_bodies[i].position.x.abs();
 
-        let absolute_y : f32 = resultant_bodies[i].position.y.abs();
+        let absolute_y : f64 = resultant_bodies[i].position.y.abs();
 
-        let absolute_z : f32 = resultant_bodies[i].position.z.abs();
+        let absolute_z : f64 = resultant_bodies[i].position.z.abs();
 
         // Check OOB
         if absolute_x > bound {
@@ -233,23 +239,23 @@ pub fn update_all_bodies(bodies: &Vec<Body>, timestep : f32, bound : f32) -> Vec
     return resultant_bodies;
 }
 
-fn gen_body(id : i32) -> Body {
+fn gen_body(id : i64) -> Body {
     let rand_pos = Vector {
-        x: rand::thread_rng().gen_range(-250..251) as f32,
-        y: rand::thread_rng().gen_range(-250..251) as f32,
-        z: rand::thread_rng().gen_range(-250..251) as f32
+        x: rand::thread_rng().gen_range(-50..50) as f64,
+        y: rand::thread_rng().gen_range(-50..50) as f64,
+        z: rand::thread_rng().gen_range(-50..50) as f64
         };
 
     let rand_vel = Vector {
-        x: rand::thread_rng().gen_range(1..51) as f32,
-        y: rand::thread_rng().gen_range(1..51) as f32,
-        z: rand::thread_rng().gen_range(1..51) as f32
+        x: rand::thread_rng().gen_range(-10..10) as f64,
+        y: rand::thread_rng().gen_range(-10..10) as f64,
+        z: rand::thread_rng().gen_range(-10..10) as f64
     };
 
     let body = Body {
         id: id,
-        mass: rand::thread_rng().gen_range(1..101),
-        radius: rand::thread_rng().gen_range(1..51) as f32,
+        mass: rand::thread_rng().gen_range(1..100001),
+        radius: rand::thread_rng().gen_range(0.001..5.) as f64,
         position: rand_pos,
         velocity: rand_vel
     };
@@ -257,11 +263,23 @@ fn gen_body(id : i32) -> Body {
     return body;
 }
 
-pub fn gen_bodies(n : i32) -> Vec<Body> {
+pub fn gen_bodies(n : i64) -> Vec<Body> {
     let mut bodies = Vec::new();
     for i in 0..n {
         bodies.push(gen_body(i));
     }
+    let sun = gen_solar(1000., 100000);
+    bodies.push(sun);
 
     return bodies;
+}
+
+pub fn gen_solar (radius : f64, mass : i64) -> Body {
+    Body {
+        id: -1,
+        mass: mass,
+        radius: radius,
+        position: Vector {x:0., y:0. ,z:0.},
+        velocity: Vector {x:0., y:0. ,z:0.},
+    }
 }
