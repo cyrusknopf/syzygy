@@ -12,6 +12,8 @@ use kiss3d::light::Light;
 use physics::Body;
 
 const NUM_PLANETS : i64 = 10;
+const BOUND : f64 = 500.;
+const TIME_SCALE : f64 = 0.05;
 
 pub struct Body3D {
     pub body: Body,
@@ -61,7 +63,7 @@ fn main() {
 
     while window.render() {
         // Update the locations and velocities of all bodies
-        bodies = physics::update_all_bodies(&bodies, 0.01, 1000.);
+        bodies = physics::update_all_bodies(&bodies, TIME_SCALE, BOUND);
 
         // Update the position of the corresponding 3D objects
         for i in 0..nodes.len() {

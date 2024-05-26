@@ -267,9 +267,9 @@ fn gen_body(id : i64) -> Body {
         };
 
     let rand_vel = Vector {
-        x: rand::thread_rng().gen_range(-3..3) as f64,
-        y: rand::thread_rng().gen_range(-3..3) as f64,
-        z: rand::thread_rng().gen_range(-3..3) as f64
+        x: rand::thread_rng().gen_range(-10..10) as f64,
+        y: rand::thread_rng().gen_range(-10..10) as f64,
+        z: rand::thread_rng().gen_range(-10..10) as f64
     };
 
     let body = Body {
