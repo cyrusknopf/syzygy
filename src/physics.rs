@@ -288,7 +288,7 @@ pub fn gen_bodies(n : i64) -> Vec<Body> {
     for i in 0..n {
         bodies.push(gen_body(i));
     }
-    let sun = gen_solar(10., 1000000);
+    let sun = gen_solar(10., 5000000);
     bodies.push(sun);
 
     return bodies;
